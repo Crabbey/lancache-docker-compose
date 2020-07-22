@@ -1,5 +1,6 @@
 #!/bin/bash
 
+# Initialise colours
 initcolours() {
     if test -t 1; then
         # see if it supports colors...
@@ -22,24 +23,12 @@ initcolours() {
         fi
     fi
 }
+# Call to initialise colours at startup
 initcolours
 
-disablecolours() {
-    bold=""
-    underline=""
-    standout=""
-    normal=""
-    black=""
-    red=""
-    green=""
-    yellow=""
-    darkblue=""
-    magenta=""
-    blue=""
-    white=""
-    bgred=""
-}
-
+# Display main menu and any messages
+# $1 - Will not cause a clear if 0 is passed. Default: 1
+# $2 - Message to display
 show_main_menu() {
     if [ -z "$1" ] && [ "$1" != "0" ]; then
         clear
@@ -65,6 +54,7 @@ show_main_menu() {
     read -n1 mm_answer
 }
 
+# Runs a check of the environment
 check_environment() {
     # TODO:
     # Check if storage is on nfs or cifs
@@ -168,10 +158,12 @@ check_environment() {
     return $dontrun
 }
 
+# Loads .env into context
 load_env() {
     . $(dirname $0)/.env
 }
 
+# Displays the configuration menu
 show_configure_menu() {
     clear
     load_env
@@ -200,6 +192,9 @@ show_configure_menu() {
     read -n1 cm_answer
 }
 
+# Checks if argument is a valid v4 address
+# $1 - Value to check
+# Returns 0 on valid and 1 on invalid
 check_valid_v4() {
     local ip=${1:-1.2.3.4}
     local IFS=.
@@ -216,6 +211,7 @@ check_valid_v4() {
     return 0
 }
 
+# Wrapper for the configuration menu that responds to show_configure_menu
 configure_menu() {
     show_configure_menu
     while [ "${cm_answer}" != '' ]; do
@@ -365,12 +361,14 @@ configure_menu() {
     done
 }
 
+# Starts the cache
 start_cache() {
     pushd $(dirname $0)
     docker-compose up -d
     popd
 }
 
+# Fetches the status of the restart properties in docker-compose.yml
 get_autostart_status() {
     test=$(cat $(dirname $0)/docker-compose.yml | grep "#    restart")
     if [ "$test" == "" ]; then
@@ -380,6 +378,7 @@ get_autostart_status() {
     echo "DISABLED"
 }
 
+# Toggles the status of the autostart properties in docker-compose.yml
 toggle_autostart() {
     if [ $(get_autostart_status) == "ENABLED" ]; then
         sed -iE "s/    restart: unless-stopped/#    restart: unless-stopped/" $(dirname $0)/docker-compose.yml
@@ -390,6 +389,8 @@ toggle_autostart() {
     fi
 }
 
+# Updates & restarts the container
+# Prompts to make sure the user knows this is intrusive
 update_restart() {
     printf "${blue}*********************************************${normal}\n"
     printf "${yellow}** This will restart your containers and interrupt service\n"
@@ -405,6 +406,7 @@ update_restart() {
     popd
 }
 
+# Main menu handler, implements show_main_menu
 main_menu() {
     show_main_menu
     while [ "${mm_answer}" != '' ]; do

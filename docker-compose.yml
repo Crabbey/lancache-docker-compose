@@ -6,6 +6,7 @@ services:
 #    restart: unless-stopped
     ports:
       - ${DNS_BIND_IP}:53:53/udp
+      - ${DNS_BIND_IP}:53:53/tcp
   sniproxy:
     image: lancachenet/sniproxy:latest
     env_file: .env
@@ -17,7 +18,7 @@ services:
     env_file: .env
 #    restart: unless-stopped
     ports:
-      - 80:80/tcp
+      - 8089:80/tcp
     volumes:
       - ${CACHE_ROOT}/cache:/data/cache
       - ${CACHE_ROOT}/logs:/data/logs
